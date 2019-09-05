@@ -42,13 +42,33 @@ function HomeBridgePC(log, config) {
     this.switchService.getCharacteristic(Characteristic.On)
         .on('get', this.getStatus.bind(this))
         .on('set', this.setStatus.bind(this));
+
     // PC配置
     this.pc_mac = config.pc_mac;
     this.service_url = config.service_url;
     this.auth_username = config.auth_username;
     this.auth_key = config.auth_key;
+
     // 基本信息
     this.status = Status.Offline;
+
+    // 计时器
+    this.interval = config.interval;
+    timer = setInterval(function(){
+        request.get(this.service_url + '/ping', {
+            timeout: this.interval
+        }, function(error, response){
+            if (error){
+                this.status = Status.Offline;
+                return;
+            }
+            if (response.statusCode == 200){
+                this.status = Status.Online;
+            } else {
+                this.status = Status.Unknown;
+            }
+        }.bind(this));
+    }.bind(this), this.interval);
 }
 
 HomeBridgePC.prototype.getStatus = function(callback){
@@ -65,26 +85,6 @@ HomeBridgePC.prototype.setStatus = function(on, callback) {
                 if (err){
                     // 唤醒失败，设置状态为关闭
                     this.status = Status.Offline;
-                } else {
-                    // 设置 Timer
-                    if (timer){
-                        clearInterval(timer);
-                    }
-                    timer = setInterval(function(){
-                        request.get(this.service_url + '/ping', {
-                            timeout: 5000
-                        }, function(error, response){
-                            if (error){
-                                this.status = Status.Offline;
-                                return;
-                            }
-                            if (response.statusCode == 200){
-                                this.status = Status.Online;
-                            } else {
-                                this.status = Status.Unknown;
-                            }
-                        }.bind(this));
-                    }.bind(this), 5000);
                 }
             }.bind(this));
         } else {
