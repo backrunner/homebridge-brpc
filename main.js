@@ -32,7 +32,7 @@ function HomeBridgePC(log, config) {
         softwareVersion: (config.software ? config.software : "Unknown")
     };
     // set infomation
-    infomationService.setCharacteristic(Characteristic.Manufacturer, this.infomation.manufacturer)
+    this.infomationService.setCharacteristic(Characteristic.Manufacturer, this.infomation.manufacturer)
         .setCharacteristic(Characteristic.Model, this, infomation.model)
         .setCharacteristic(Characteristic.SerialNumber, this.infomation.serialNumber)
         .setCharacteristic(Characteristic.Name, this.infomation.name)
