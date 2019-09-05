@@ -33,7 +33,7 @@ function HomeBridgePC(log, config) {
     };
     // set infomation
     this.infomationService.setCharacteristic(Characteristic.Manufacturer, this.infomation.manufacturer)
-        .setCharacteristic(Characteristic.Model, this, infomation.model)
+        .setCharacteristic(Characteristic.Model, this.infomation.model)
         .setCharacteristic(Characteristic.SerialNumber, this.infomation.serialNumber)
         .setCharacteristic(Characteristic.Name, this.infomation.name)
         .setCharacteristic(Characteristic.SoftwareRevision, this.infomation.softwareVersion);
