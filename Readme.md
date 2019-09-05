@@ -15,13 +15,6 @@ npm install homebridge-brpc -g
 ## Config
 
 ```json
-{
-    "bridge": {
-        "name": "Homebridge",
-        "username": "00:0C:29:E1:25:B2",
-        "port": 51826,
-        "pin": "031-45-154"
-    },
     "accessories": [{
         "accessory": "PC",
         "name": "My Computer",
@@ -34,5 +27,4 @@ npm install homebridge-brpc -g
         "auth_key": "",
         "interval": 5000
     }]
-}
 ```
