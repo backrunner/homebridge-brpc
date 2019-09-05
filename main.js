@@ -4,8 +4,6 @@ const request = require('request');
 var Service;
 var Characteristic;
 
-var timer;
-
 const Status = {
     Online: Symbol('Online'),
     Offline: Symbol('Offline'),
@@ -42,21 +40,7 @@ function HomeBridgePC(log, config) {
 
     // 计时器
     this.interval = config.interval;
-    timer = setInterval(function() {
-        request.get(this.service_url + '/ping', {
-            timeout: this.interval
-        }, function(error, response) {
-            if (error) {
-                this.status = Status.Offline;
-                return;
-            }
-            if (response.statusCode == 200) {
-                this.status = Status.Online;
-            } else {
-                this.status = Status.Unknown;
-            }
-        }.bind(this));
-    }.bind(this), this.interval);
+    this.timer = setInterval(this.pinger.bind(this), this.interval);
 
     // set switchService
     this.switchService = new Service.Switch(this.name);
@@ -83,6 +67,10 @@ HomeBridgePC.prototype.setStatus = function(on, callback) {
             // 通过wol唤醒
             this.status = Status.WakingUp;
             this.on_callback = callback;
+            // 设置timer
+            if (!this.timer) {
+                this.timer = setInterval(this.pinger.bind(this), this.interval);
+            }
             wol.wake(this.pc_mac, function(err) {
                 if (err) {
                     // 唤醒失败，设置状态为关闭
@@ -123,3 +111,22 @@ HomeBridgePC.prototype.setStatus = function(on, callback) {
 HomeBridgePC.prototype.getServices = function() {
     return [this.infomationService, this.switchService];
 };
+
+HomeBridgePC.prototype.pinger = function() {
+    request.get(this.service_url + '/ping', {
+        timeout: this.interval
+    }, function(error, response) {
+        if (error) {
+            if (this.status == Status.ShuttingDown) {
+                clearInterval(timer);
+            }
+            this.status = Status.Offline;
+            return;
+        }
+        if (response.statusCode == 200) {
+            this.status = Status.Online;
+        } else {
+            this.status = Status.Unknown;
+        }
+    });
+}
