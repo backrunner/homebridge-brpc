@@ -128,5 +128,5 @@ HomeBridgePC.prototype.pinger = function() {
         } else {
             this.status = Status.Unknown;
         }
-    });
-}
+    }.bind(this));
+};
