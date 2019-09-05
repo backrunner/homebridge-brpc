@@ -31,18 +31,6 @@ function HomeBridgePC(log, config) {
         manufacturer: (config.manufacturer ? config.manufacturer : "Unknown"),
         softwareVersion: (config.software ? config.software : "Unknown")
     };
-    // set infomation
-    this.infomationService.setCharacteristic(Characteristic.Manufacturer, this.infomation.manufacturer)
-        .setCharacteristic(Characteristic.Model, this.infomation.model)
-        .setCharacteristic(Characteristic.SerialNumber, this.infomation.serialNumber)
-        .setCharacteristic(Characteristic.Name, this.infomation.name)
-        .setCharacteristic(Characteristic.SoftwareRevision, this.infomation.softwareVersion);
-    // set switchService
-    this.switchService = new Service.Switch(this.name);
-    this.switchService.getCharacteristic(Characteristic.On)
-        .on('get', this.getStatus.bind(this))
-        .on('set', this.setStatus.bind(this));
-
     // PC配置
     this.pc_mac = config.pc_mac;
     this.service_url = config.service_url;
@@ -54,37 +42,54 @@ function HomeBridgePC(log, config) {
 
     // 计时器
     this.interval = config.interval;
-    timer = setInterval(function(){
+    timer = setInterval(function() {
         request.get(this.service_url + '/ping', {
             timeout: this.interval
-        }, function(error, response){
-            if (error){
+        }, function(error, response) {
+            if (error) {
                 this.status = Status.Offline;
                 return;
             }
-            if (response.statusCode == 200){
+            if (response.statusCode == 200) {
                 this.status = Status.Online;
             } else {
                 this.status = Status.Unknown;
             }
         }.bind(this));
     }.bind(this), this.interval);
+
+    // set switchService
+    this.switchService = new Service.Switch(this.name);
+    this.switchService.getCharacteristic(Characteristic.On)
+        .on('get', this.getStatus.bind(this))
+        .on('set', this.setStatus.bind(this));
+
+    // set infomation
+    this.infomationService.setCharacteristic(Characteristic.Manufacturer, this.infomation.manufacturer)
+        .setCharacteristic(Characteristic.Model, this.infomation.model)
+        .setCharacteristic(Characteristic.SerialNumber, this.infomation.serialNumber)
+        .setCharacteristic(Characteristic.Name, this.infomation.name)
+        .setCharacteristic(Characteristic.SoftwareRevision, this.infomation.softwareVersion);
 }
 
-HomeBridgePC.prototype.getStatus = function(callback){
-    callback(null, this.status === Status.Online || this.status === Status.WakingUp); 
+HomeBridgePC.prototype.getStatus = function(callback) {
+    callback(null, this.status === Status.Online || this.status === Status.WakingUp);
 };
 
 HomeBridgePC.prototype.setStatus = function(on, callback) {
-    if (on){
+    if (on) {
         // 打开设备
-        if (this.pc_mac){
+        if (this.pc_mac) {
             // 通过wol唤醒
             this.status = Status.WakingUp;
-            wol.wake(this.pc_mac, function(err){
-                if (err){
+            this.on_callback = callback;
+            wol.wake(this.pc_mac, function(err) {
+                if (err) {
                     // 唤醒失败，设置状态为关闭
                     this.status = Status.Offline;
+                    this.on_callback(null, false);
+                } else {
+                    this.on_callback(null, true);
                 }
             }.bind(this));
         } else {
@@ -93,18 +98,19 @@ HomeBridgePC.prototype.setStatus = function(on, callback) {
         }
     } else {
         // 关闭设备
-        if (this.service_url){
-            if (timer){
-                clearInterval(timer);
-            }
+        if (this.service_url) {
+            this.off_callback = callback;
             request.get({
                 url: this.service_url + '/action/shutdown',
                 headers: {
-                    'Authorization': this.auth_username+':'+this.auth_key
+                    'Authorization': this.auth_username + ':' + this.auth_key
                 }
-            }, function(error, response, body){
-                if (response.statusCode == 200){
+            }, function(error, response, body) {
+                if (response.statusCode == 200) {
                     this.status = Status.ShuttingDown;
+                    this.off_callback(null, false);
+                } else {
+                    this.off_callback(null, true);
                 }
             }.bind(this));
         } else {
