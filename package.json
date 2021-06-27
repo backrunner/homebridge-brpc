@@ -1,6 +1,6 @@
 {
   "name": "homebridge-brpc",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "PC port for homebridge",
   "main": "main.js",
   "keywords": [
