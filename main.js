@@ -41,6 +41,7 @@ function HomeBridgePC(log, config) {
   // 计时器
   this.interval = config.interval;
   this.timer = setInterval(this.pinger.bind(this), this.interval);
+  this.lastOperation = null;
 
   // action
   this.hibernate = config.hibernate;
@@ -58,6 +59,12 @@ HomeBridgePC.prototype.getStatus = function (callback) {
 };
 
 HomeBridgePC.prototype.setStatus = function (on, callback) {
+  if (!this.lastOperation) {
+    this.lastOperation = Date.now();
+  } else if (Date.now() - this.lastOperation <= 1000) {
+    // avoid duplicated request
+    return;
+  }
   if (on) {
     // 打开设备
     if (!this.pc_mac) {
@@ -135,6 +142,9 @@ HomeBridgePC.prototype.getServices = function () {
 };
 
 HomeBridgePC.prototype.pinger = function () {
+  if (this.lastOperation && Date.now - this.lastOperation <= 1000) {
+    return;
+  }
   request.get(
     this.service_url + '/ping',
     {
