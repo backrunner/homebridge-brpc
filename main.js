@@ -42,6 +42,9 @@ function HomeBridgePC(log, config) {
   this.interval = config.interval;
   this.timer = setInterval(this.pinger.bind(this), this.interval);
 
+  // action
+  this.hibernate = config.hibernate;
+
   // set switchService
   this.switchService = new Service.Switch(this.name);
   this.switchService.getCharacteristic(Characteristic.On).on('get', this.getStatus.bind(this)).on('set', this.setStatus.bind(this));
