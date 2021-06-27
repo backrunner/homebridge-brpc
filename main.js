@@ -64,6 +64,8 @@ HomeBridgePC.prototype.setStatus = function (on, callback) {
   } else if (Date.now() - this.lastOperation <= 1000) {
     // avoid duplicated request
     return;
+  } else {
+    this.lastOperation = Date.now();
   }
   if (on) {
     // 打开设备
@@ -142,7 +144,7 @@ HomeBridgePC.prototype.getServices = function () {
 };
 
 HomeBridgePC.prototype.pinger = function () {
-  if (this.lastOperation && Date.now - this.lastOperation <= 1000) {
+  if (this.lastOperation && Date.now - this.lastOperation <= 10000) {
     return;
   }
   request.get(
