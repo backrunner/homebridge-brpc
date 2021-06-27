@@ -3,9 +3,6 @@
   "version": "0.2.0",
   "description": "PC port for homebridge",
   "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "Homebridge",
     "WOL",
@@ -18,6 +15,14 @@
   },
   "author": "BackRunner",
   "license": "MIT",
+  "homepage": "https://github.com/backrunner/homebridge-brpc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/backrunner/homebridge-brpc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/backrunner/homebridge-brpc/issues"
+  },
   "dependencies": {
     "node-wol": "^0.1.1",
     "request": "^2.88.2"
