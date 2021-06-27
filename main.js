@@ -57,33 +57,36 @@ HomeBridgePC.prototype.getStatus = function (callback) {
 HomeBridgePC.prototype.setStatus = function (on, callback) {
   if (on) {
     // 打开设备
-    if (this.pc_mac) {
-      // 通过wol唤醒
-      this.status = Status.WakingUp;
-      this.on_callback = callback;
-      // 设置timer
-      if (!this.timer) {
-        this.timer = setInterval(this.pinger.bind(this), this.interval);
-      }
-      if (Array.isArray(this.pc_mac)) {
-        this.pc_mac.forEach((macAddr, index) => {
-          wol.wake(
-            macAddr,
-            function (err) {
-              if (index !== this.pc_mac.length - 1) {
-                return;
-              }
-              if (err) {
-                // 唤醒失败，设置状态为关闭
-                this.status = Status.Offline;
-                this.on_callback(null, false);
-              } else {
-                this.on_callback(null, true);
-              }
-            }.bind(this)
-          );
-        });
-      }
+    if (!this.pc_mac) {
+      callback(new Error('PC MAC cannot be empty.'));
+      return;
+    }
+    // 通过wol唤醒
+    this.status = Status.WakingUp;
+    this.on_callback = callback;
+    // 设置timer
+    if (!this.timer) {
+      this.timer = setInterval(this.pinger.bind(this), this.interval);
+    }
+    if (Array.isArray(this.pc_mac)) {
+      this.pc_mac.forEach((macAddr, index) => {
+        wol.wake(
+          macAddr,
+          function (err) {
+            if (index !== this.pc_mac.length - 1) {
+              return;
+            }
+            if (err) {
+              // 唤醒失败，设置状态为关闭
+              this.status = Status.Offline;
+              this.on_callback(null, false);
+            } else {
+              this.on_callback(null, true);
+            }
+          }.bind(this)
+        );
+      });
+    } else {
       wol.wake(
         this.pc_mac,
         function (err) {
@@ -96,9 +99,6 @@ HomeBridgePC.prototype.setStatus = function (on, callback) {
           }
         }.bind(this)
       );
-    } else {
-      callback(new Error('PC MAC cannot be empty.'));
-      return;
     }
   } else {
     // 关闭设备
