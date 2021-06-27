@@ -15,16 +15,19 @@ npm install homebridge-brpc -g
 ## Config
 
 ```json
-    "accessories": [{
-        "accessory": "PC",
-        "name": "My Computer",
-        "model": "Unknown",
-        "manufacturer": "Unknown",
-        "software": "Windows",
-        "pc_mac": "00:00:00:00:00:00",
-        "service_url": "http://192.168.1.xxx:8300",
-        "auth_username": "",
-        "auth_key": "",
-        "interval": 5000
-    }]
+{
+  "accessories": [{
+    "accessory": "PC",
+    "name": "My Computer",
+    "model": "Unknown",
+    "manufacturer": "Unknown",
+    "software": "Windows",
+    "pc_mac": "00:00:00:00:00:00",
+    "service_url": "http://192.168.1.xxx:8300",
+    "auth_username": "",
+    "auth_key": "",
+    "interval": 5000,
+    "hibernate: false
+  }]
+}
 ```
